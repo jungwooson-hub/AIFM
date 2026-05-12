@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI-Native 파이낸셜 모델링 — 강의 기획안</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c0d0f;
+    --surface: #13151a;
+    --surface2: #1a1d24;
+    --border: #252830;
+    --gold: #d4a843;
+    --gold-dim: #8a6b28;
+    --gold-glow: rgba(212,168,67,0.12);
+    --text: #e8e6e0;
+    --text-muted: #7a7870;
+    --text-dim: #4a4844;
+    --accent-blue: #5b8af0;
+    --accent-green: #4caf82;
+    --accent-red: #e05555;
+    --accent-purple: #9b72e8;
+    --font-serif: 'DM Serif Display', 'Georgia', serif;
+    --font-mono: 'DM Mono', monospace;
+    --font-sans: 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── NOISE TEXTURE ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.6;
+  }
+
+  /* ── LAYOUT ── */
+  .container { max-width: 960px; margin: 0 auto; padding: 0 32px; position: relative; z-index: 1; }
+
+  /* ── HEADER ── */
+  .hero {
+    padding: 80px 0 64px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    top: -60px; right: -120px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(212,168,67,0.08) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .hero-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .hero-label::before {
+    content: '';
+    display: inline-block;
+    width: 24px; height: 1px;
+    background: var(--gold);
+  }
+
+  .hero h1 {
+    font-family: var(--font-serif);
+    font-size: clamp(36px, 5vw, 58px);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .hero h1 em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .hero-sub {
+    font-size: 17px;
+    color: var(--text-muted);
+    margin-top: 20px;
+    max-width: 560px;
+    line-height: 1.65;
+  }
+
+  .hero-meta {
+    display: flex;
+    gap: 32px;
+    margin-top: 36px;
+    flex-wrap: wrap;
+  }
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .meta-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+  .meta-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .meta-value.gold { color: var(--gold); }
+
+  /* ── SECTION ── */
+  section { padding: 64px 0; border-bottom: 1px solid var(--border); }
+  section:last-child { border-bottom: none; }
+
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  h2 {
+    font-family: var(--font-serif);
+    font-size: 28px;
+    margin-bottom: 20px;
+    color: var(--text);
+  }
+
+  /* ── POSITIONING CARDS ── */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .card:hover { border-color: var(--gold-dim); }
+
+  .card.full { grid-column: 1 / -1; }
+
+  .card-icon {
+    font-size: 20px;
+    margin-bottom: 12px;
+  }
+  .card h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+  .card p {
+    font-size: 13.5px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  /* ── COMPARE TABLE ── */
+  .compare-wrap {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 24px;
+  }
+  .compare-col {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .compare-col.new { border-color: var(--gold-dim); background: rgba(212,168,67,0.04); }
+  .compare-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .compare-col.new .compare-header { color: var(--gold); }
+  .compare-header .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--text-dim);
+    flex-shrink: 0;
+  }
+  .compare-col.new .compare-header .dot { background: var(--gold); }
+
+  .compare-list {
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .compare-item {
+    font-size: 13.5px;
+    color: var(--text-muted);
+    padding-left: 16px;
+    position: relative;
+    line-height: 1.5;
+  }
+  .compare-item::before {
+    content: '–';
+    position: absolute;
+    left: 0;
+    color: var(--text-dim);
+  }
+  .compare-col.new .compare-item { color: var(--text); }
+  .compare-col.new .compare-item::before { content: '→'; color: var(--gold); }
+
+  /* ── PART BLOCKS ── */
+  .part-block {
+    margin-top: 32px;
+    position: relative;
+  }
+
+  .part-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  .part-badge {
+    flex-shrink: 0;
+    width: 48px; height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    border: 1px solid;
+  }
+
+  .part-badge.p0 { background: rgba(90,130,240,0.1); border-color: rgba(90,130,240,0.3); color: var(--accent-blue); }
+  .part-badge.p1 { background: rgba(212,168,67,0.1); border-color: rgba(212,168,67,0.3); color: var(--gold); }
+  .part-badge.p2 { background: rgba(76,175,130,0.1); border-color: rgba(76,175,130,0.3); color: var(--accent-green); }
+  .part-badge.p3 { background: rgba(155,114,232,0.1); border-color: rgba(155,114,232,0.3); color: var(--accent-purple); }
+  .part-badge.p4 { background: rgba(224,85,85,0.1); border-color: rgba(224,85,85,0.3); color: var(--accent-red); }
+
+  .part-title-wrap { flex: 1; }
+  .part-title-wrap h3 {
+    font-family: var(--font-serif);
+    font-size: 20px;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .part-title-wrap .part-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .part-time {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-dim);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+    align-self: center;
+  }
+
+  /* ── CHAPTER LIST ── */
+  .chapter-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .chapter {
+    display: grid;
+    grid-template-columns: 36px 1fr auto;
+    gap: 12px;
+    align-items: start;
+    padding: 14px 16px;
+    border-radius: 8px;
+    background: var(--surface);
+    border: 1px solid transparent;
+    transition: all 0.15s;
+  }
+  .chapter:hover {
+    border-color: var(--border);
+    background: var(--surface2);
+  }
+
+  .ch-num {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    padding-top: 2px;
+  }
+
+  .ch-body { flex: 1; }
+  .ch-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 3px;
+  }
+  .ch-desc {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .ch-tags {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+  .tag {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-weight: 500;
+  }
+  .tag.theory { background: rgba(90,130,240,0.12); color: #7baaf5; }
+  .tag.practice { background: rgba(76,175,130,0.12); color: #6bcba0; }
+  .tag.ai { background: rgba(212,168,67,0.12); color: var(--gold); }
+  .tag.industry { background: rgba(155,114,232,0.12); color: #b89cf0; }
+
+  .ch-time {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    white-space: nowrap;
+    padding-top: 2px;
+  }
+
+  /* ── HIGHLIGHT BOX ── */
+  .highlight-box {
+    background: var(--gold-glow);
+    border: 1px solid rgba(212,168,67,0.2);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-top: 20px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .highlight-box .icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .highlight-box p {
+    font-size: 13.5px;
+    color: var(--text-muted);
+    line-height: 1.65;
+  }
+  .highlight-box p strong { color: var(--gold); font-weight: 600; }
+
+  /* ── INDUSTRY GRID ── */
+  .industry-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .industry-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    transition: border-color 0.2s;
+  }
+  .industry-card:hover { border-color: var(--gold-dim); }
+  .industry-card .ind-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    color: var(--accent-purple);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .industry-card h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .industry-card p {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .industry-card .ind-driver {
+    margin-top: 10px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    background: var(--surface2);
+    border-radius: 4px;
+    padding: 6px 10px;
+  }
+  .industry-card .ind-driver span { color: var(--gold); }
+
+  /* ── TIMELINE BAR ── */
+  .timeline-bar {
+    margin-top: 40px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 28px 20px;
+  }
+  .tl-title {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .tl-bar-wrap { display: flex; gap: 3px; margin-bottom: 12px; border-radius: 6px; overflow: hidden; }
+  .tl-seg {
+    height: 10px;
+    border-radius: 2px;
+    position: relative;
+  }
+  .tl-seg.s0 { background: var(--accent-blue); flex: 1; }
+  .tl-seg.s1 { background: var(--gold); flex: 3.5; }
+  .tl-seg.s2 { background: var(--accent-green); flex: 4.5; }
+  .tl-seg.s3 { background: var(--accent-purple); flex: 8; }
+  .tl-seg.s4 { background: var(--accent-red); flex: 2; }
+
+  .tl-legend {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+  .tl-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .tl-dot {
+    width: 8px; height: 8px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .tl-total {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .tl-total span { color: var(--gold); font-size: 15px; margin-left: 8px; font-weight: 600; }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-top: 28px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .flow-node {
+    flex-shrink: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    text-align: center;
+    min-width: 120px;
+  }
+  .flow-node .fn-top {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .flow-node .fn-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.3;
+  }
+  .flow-arrow {
+    flex-shrink: 0;
+    color: var(--text-dim);
+    font-size: 16px;
+    padding: 0 6px;
+  }
+
+  /* ── PRINCIPLE LIST ── */
+  .principle-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+  }
+  .principle {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+  .principle-num {
+    font-family: var(--font-serif);
+    font-size: 28px;
+    color: var(--gold-dim);
+    line-height: 1;
+    flex-shrink: 0;
+    width: 32px;
+  }
+  .principle-body h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .principle-body p {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  /* ── RATIO VISUAL ── */
+  .ratio-wrap {
+    margin-top: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+  .ratio-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+  }
+  .ratio-bars { display: flex; gap: 8px; align-items: flex-end; height: 60px; margin-bottom: 12px; }
+  .ratio-bar-item { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 4px; }
+  .ratio-bar {
+    width: 100%;
+    border-radius: 4px 4px 0 0;
+    transition: opacity 0.2s;
+  }
+  .ratio-pct {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .ratio-desc {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .ratio-desc-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .rdot { width: 8px; height: 8px; border-radius: 2px; }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 40px 0;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .hero > * { animation: fadeUp 0.6s ease both; }
+  .hero > *:nth-child(1) { animation-delay: 0.05s; }
+  .hero > *:nth-child(2) { animation-delay: 0.15s; }
+  .hero > *:nth-child(3) { animation-delay: 0.25s; }
+  .hero > *:nth-child(4) { animation-delay: 0.35s; }
+
+  @media (max-width: 640px) {
+    .cards-grid, .compare-wrap, .industry-grid { grid-template-columns: 1fr; }
+    .card.full { grid-column: 1; }
+    .chapter { grid-template-columns: 28px 1fr auto; }
+    .flow { flex-direction: column; }
+    .flow-arrow { transform: rotate(90deg); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════ HERO ═══ -->
+<div class="hero">
+  <div class="container">
+    <div class="hero-label">강의 기획안 v1.0 — 2026</div>
+    <h1>엑셀을 버리고<br><em>판단에 집중한다</em></h1>
+    <p class="hero-sub">
+      AI를 활용하는 실무자를 위한 파이낸셜 모델링 — 기존 강의 방식을 완전히 버리고, 처음부터 AI-Native하게 설계한 커리큘럼.
+    </p>
+    <div class="hero-meta">
+      <div class="meta-item">
+        <span class="meta-label">총 강의시간</span>
+        <span class="meta-value gold">19H 00M</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">파트 구성</span>
+        <span class="meta-value">5 Parts · 16 Chapters</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">실습 비중</span>
+        <span class="meta-value">68%</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">타겟</span>
+        <span class="meta-value">재무·기획 실무자</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════ 포지셔닝 ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label">01 · 강의 포지셔닝</div>
+    <h2>왜 이 강의가 달라야 하는가</h2>
+
+    <div class="compare-wrap">
+      <div class="compare-col">
+        <div class="compare-header">
+          <span class="dot"></span>기존 파이낸셜 모델링 강의
+        </div>
+        <div class="compare-list">
+          <div class="compare-item">엑셀을 더 잘 쓰는 법 중심</div>
+          <div class="compare-item">공식·셀 참조 구조 위주 설명</div>
+          <div class="compare-item">가상 기업 템플릿 기반 실습</div>
+          <div class="compare-item">AI는 "보조 도구"로 짧게 언급</div>
+          <div class="compare-item">완성 모델을 어떻게 설명할지 안 다룸</div>
+          <div class="compare-item">배웠지만 업무에서 쓰기 어려움</div>
+        </div>
+      </div>
+      <div class="compare-col new">
+        <div class="compare-header">
+          <span class="dot"></span>이 강의
+        </div>
+        <div class="compare-list">
+          <div class="compare-item">AI가 기계 작업을 흡수, 인간은 판단에 집중</div>
+          <div class="compare-item">비즈니스 드라이버 사고법부터 설계</div>
+          <div class="compare-item">실제 공시자료·IR 자료 기반 실전 실습</div>
+          <div class="compare-item">Claude Code + Claude in Excel 풀 워크플로우</div>
+          <div class="compare-item">모델 → 경영진 커뮤니케이션까지 연결</div>
+          <div class="compare-item">수료 당일 실무 적용 가능한 결과물</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight-box" style="margin-top:24px">
+      <div class="icon">💡</div>
+      <p>
+        핵심 명제: 엑셀은 모델을 <strong>"만드는" 도구</strong>로는 유용하지만, 모델을 <strong>"소통하고 활용하는" 도구</strong>로는 부족하다.
+        AI가 기계적 작업(셀 삽질)을 흡수하면, 실무자는 비로소 <strong>"이 가정이 합리적인가?"</strong>에 시간을 쓸 수 있게 된다.
+      </p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════ 설계 원칙 ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label">02 · 설계 원칙</div>
+    <h2>커리큘럼 3가지 기준</h2>
+
+    <div class="principle-list">
+      <div class="principle">
+        <div class="principle-num">1</div>
+        <div class="principle-body">
+          <h4>기본기는 "리마인더" 수준으로, 사고법에 집중한다</h4>
+          <p>타겟이 실무자이므로 재무제표 읽는 법 같은 기초는 30분 내 압축 정리. 강의의 무게 중심은 <strong>비즈니스 드라이버 설계</strong>와 <strong>합리적 가정 수립 능력</strong>에 둔다. 엑셀 함수·단축키는 다루지 않는다.</p>
+        </div>
+      </div>
+      <div class="principle">
+        <div class="principle-num">2</div>
+        <div class="principle-body">
+          <h4>실습이 이론을 이끈다 — 전체의 68%가 핸즈온</h4>
+          <p>개념 설명 → 즉시 AI 실습 → 결과 검토 → 판단 훈련의 루프로 구성. 각 챕터는 수강생이 실제 결과물(인터랙티브 모델 또는 검증된 모델)을 손에 쥐고 끝나도록 설계한다.</p>
+        </div>
+      </div>
+      <div class="principle">
+        <div class="principle-num">3</div>
+        <div class="principle-body">
+          <h4>사고법 → AI 실습 → 업종 적용의 순차적 연결</h4>
+          <p>"왜 이 구조인가"(사고법) → "AI로 어떻게 만드는가"(도구) → "내 업종에 어떻게 적용하는가"(실전)의 3단 계단이 끊기지 않도록 파트 간 연결을 명시적으로 설계한다.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 실습 비율 시각화 -->
+    <div class="ratio-wrap">
+      <div class="ratio-label">챕터 유형 구성 비율</div>
+      <div class="ratio-bars">
+        <div class="ratio-bar-item">
+          <div class="ratio-pct">16%</div>
+          <div class="ratio-bar" style="height:22px; background:var(--accent-blue);"></div>
+        </div>
+        <div class="ratio-bar-item">
+          <div class="ratio-pct">16%</div>
+          <div class="ratio-bar" style="height:22px; background:var(--gold);"></div>
+        </div>
+        <div class="ratio-bar-item">
+          <div class="ratio-pct">28%</div>
+          <div class="ratio-bar" style="height:38px; background:var(--accent-green);"></div>
+        </div>
+        <div class="ratio-bar-item">
+          <div class="ratio-pct">40%</div>
+          <div class="ratio-bar" style="height:55px; background:var(--accent-purple);"></div>
+        </div>
+      </div>
+      <div class="ratio-desc">
+        <div class="ratio-desc-item"><div class="rdot" style="background:var(--accent-blue)"></div>패러다임·사고법 개념</div>
+        <div class="ratio-desc-item"><div class="rdot" style="background:var(--gold)"></div>AI 도구 기초 실습</div>
+        <div class="ratio-desc-item"><div class="rdot" style="background:var(--accent-green)"></div>업종별 모델링 실습</div>
+        <div class="ratio-desc-item"><div class="rdot" style="background:var(--accent-purple)"></div>커뮤니케이션·통합 실습</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════ 전체 흐름 ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label">03 · 학습 흐름</div>
+    <h2>수강생이 걷는 3막 구조</h2>
+
+    <div class="flow">
+      <div class="flow-node">
+        <div class="fn-top">Act 1</div>
+        <div class="fn-title">고통 인식<br>& 관점 전환</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">
+        <div class="fn-top">Act 2</div>
+        <div class="fn-title">판단 능력<br>사고법 훈련</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">
+        <div class="fn-top">Act 3</div>
+        <div class="fn-title">AI 도구로<br>본질에 집중</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">
+        <div class="fn-top">출구</div>
+        <div class="fn-title">업종 모델<br>완성 · 발표</div>
+      </div>
+    </div>
+
+    <div style="margin-top:24px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
+      <div class="card">
+        <div class="card-icon">😤</div>
+        <h3>Act 1 — 인식 전환</h3>
+        <p>기존 엑셀 모델의 한계를 직접 체험. "셀삽질"이 사라지면 무엇이 가능한지 체감하게 만든다.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🧠</div>
+        <h3>Act 2 — 판단 훈련</h3>
+        <p>드라이버 설계, 가정 수립, 시나리오 사고. 도구와 무관한 파이낸셜 모델러의 핵심 사고법.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚡</div>
+        <h3>Act 3 — AI 실전</h3>
+        <p>Claude in Excel + Claude Code로 업종별 인터랙티브 모델을 직접 완성. 수료 후 바로 사용.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════ 커리큘럼 ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label">04 · 커리큘럼 상세</div>
+    <h2>16 Chapters · 5 Parts</h2>
+
+    <!-- ── PART 0 ── -->
+    <div class="part-block">
+      <div class="part-header">
+        <div class="part-badge p0">P.0</div>
+        <div class="part-title-wrap">
+          <h3>패러다임 전환 — 왜 지금 AI인가</h3>
+          <div class="part-sub">고통 공감 → 관점 리셋 → 전체 조감도</div>
+        </div>
+        <div class="part-time">1H 00M</div>
+      </div>
+      <div class="chapter-list">
+        <div class="chapter">
+          <div class="ch-num">Ch 0.1</div>
+          <div class="ch-body">
+            <div class="ch-title">기존 엑셀 모델의 한계 — 직접 체험</div>
+            <div class="ch-desc">수십 개 시트가 얽힌 기존 모델에서 "전환율 가정을 5%→7%로 바꾸면?" 과제 제시. 찾다가 포기하는 체험을 통해 고통을 공감시킨다.</div>
+            <div class="ch-tags"><span class="tag practice">실습</span><span class="tag theory">개념</span></div>
+          </div>
+          <div class="ch-time">30m</div>
+        </div>
+        <div class="chapter">
+          <div class="ch-num">Ch 0.2</div>
+          <div class="ch-body">
+            <div class="ch-title">AI-Native 파이낸셜 모델링 전체 조감도</div>
+            <div class="ch-desc">이 강의에서 배울 전체 워크플로우 한눈에 조망. 공시자료 → 드라이버 분해 → 인터랙티브 모델 → 보고서까지의 흐름을 완성 시연으로 보여준다.</div>
+            <div class="ch-tags"><span class="tag theory">개념</span><span class="tag ai">AI 시연</span></div>
+          </div>
+          <div class="ch-time">30m</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PART 1 ── -->
+    <div class="part-block">
+      <div class="part-header">
+        <div class="part-badge p1">P.1</div>
+        <div class="part-title-wrap">
+          <h3>파이낸셜 모델링의 사고법</h3>
+          <div class="part-sub">도구 이전의 판단 능력 — 이것이 AI가 대체 못하는 영역</div>
+        </div>
+        <div class="part-time">3H 30M</div>
+      </div>
+      <div class="chapter-list">
+        <div class="chapter">
+          <div class="ch-num">Ch 1.1</div>
+          <div class="ch-body">
+            <div class="ch-title">모델링이란 무엇인가 — 예측이 아닌 가정의 구조화</div>
+            <div class="ch-desc">FDD(과거 분석) vs 모델링(미래 추정)의 근본 차이. 3-Statement 연결 구조를 개념으로만 30분에 압축. 실무자 리마인더 수준.</div>
+            <div class="ch-tags"><span class="tag theory">개념</span></div>
+          </div>
+          <div class="ch-time">30m</div>
+        </div>
+        <div class="chapter">
+          <div class="ch-num">Ch 1.2</div>
+          <div class="ch-body">
+            <div class="ch-title">비즈니스 드라이버 분해 — P×Q와 인과관계 트리</div>
+            <div class="ch-desc">매출을 구성요소로 분해하는 방법. 트래픽 → 전환율 → 객단가 → GMV의 인과관계 구조 설계. AI와 이 대화를 나누는 법 함께 실습.</div>
+            <div class="ch-tags"><span class="tag theory">개념</span><span class="tag practice">실습</span><span class="tag ai">AI 활용</span></div>
+          </div>
+          <div class="ch-time">60m</div>
+        </div>
+        <div class="chapter">
+          <div class="ch-num">Ch 1.3</div>
+          <div class="ch-body">
+            <div class="ch-title">좋은 가정 vs 나쁜 가정 — 합리성 검증법</div>
+            <div class="ch-desc">"매출 성장률 30%"는 어디서 나왔나? 업종 벤치마크, 과거 추세, 경영진 가이던스를 조합해 가정을 설계하고 논리적으로 설명하는 훈련.</div>
+            <div class="ch-tags"><span class="tag theory">개념</span><span class="tag practice">실습</span></div>
+          </div>
+          <div class="ch-time">60m</div>
+        </div>
+        <div class="chapter">
+          <div class="ch-num">Ch 1.4</div>
+          <div class="ch-body">
+            <div class="ch-title">시나리오 사고법 — Best / Base / Worst의 설계 원리</div>
+            <div class="ch-desc">단순 숫자 조정이 아닌 시나리오별 비즈니스 내러티브 설계. 어떤 변수를 어떻게 움직여야 의미 있는 시나리오가 되는가.</div>
+            <div class="ch-tags"><span class="tag theory">개념</span><span class="tag practice">실습</span></div>
+          </div>
+          <div class="ch-time">60m</div>
+        </div>
+      </div>
+      <div class="highlight-box">
+        <div class="icon">🎯</div>
+        <p>Part 1의 목표: <strong>이 전환율 가정이 합리적인가?</strong>를 스스로 판단할 수 있는 능력. AI는 계산을 해주지만, 이 판단은 인간이 해야 한다. 이 파트를 마치면 수강생은 어떤 AI 도구를 써도 방향을 잡을 수 있다.</p>
+      </div>
+    </div>
+
+    <!-- ── PART 2 ── -->
+    <div class="part-block">
+      <div class="part-header">
+        <div class="part-badge p2">P.2</div>
+        <div class="part-title-wrap">
+          <h3>AI × 파이낸셜 모델링 기초 실습</h3>
+          <div class="part-sub">Claude in Excel + Claude Code — 워크플로우 완전 정복</div>
+        </div>
+        <div class="part-time">4H 30M</div>
+      </div>
+      <div class="chapter-list">
+        <div class="chapter">
+          <div class="ch-num">Ch 2.1</div>
+          <div class="ch-body">
+            <div class="ch-title">파이낸셜 모델링을 위한 AI 프롬프팅 전략</div>
+            <div class="ch-desc">일반 프롬프팅과 다른 점. 가정 구조를 AI에게 전달하는 법, 컨텍스트 세팅 방법, 반복 대화로 모델을 구체화하는 전략. 실패 패턴과 해결법.</div>
+            <div class="ch-tags"><span class="tag ai">AI 활용</span><span class="tag practice">실습</span></div>
+          </div>
+          <div class="ch-time">60m</div>
+        </div>
+        <div class="chapter">
+          <div class="ch-num">Ch 2.2</div>
+          <div class="ch-body">
+            <div class="ch-title">Claude in Excel 실전 — 3-Statement 초안 30분 안에 만들기</div>
+            <div class="ch-desc">실제 공시자료(사업보고서)를 Claude in Excel에 업로드 → 셀 참조 자동 추적 → P&L 초안 생성까지. 워크북 구조 인식 기능을 최대한 활용하는 법.</div>
+            <div class="ch-tags"><span class="tag ai">AI 활용</span><span class="tag practice">실습</span></div>
+          </div>
+          <div class="ch-time">90m</div>
+        </div>
+        <div class="chapter">
+          <div class="ch-num">Ch 2.3</div>
+          <div class="ch-body">
+            <div class="ch-title">AI 결과물 검증 — 어디서 틀리는가, 어떻게 잡는가</div>
+            <div class="ch-desc">AI가 만든 모델에서 가장 흔한 오류 패턴 5가지. 블랙박스를 피하고 감사 가능한 모델을 만드는 법. "이 숫자가 왜 이렇게 나왔나"를 추적하는 훈련.</div>
+            <div class="ch-tags"><span class="tag ai">AI 활용</span><span class="tag practice">실습</span><span class="tag theory">개념</span></div>
+          </div>
+          <div class="ch-time">30m</div>
+        </div>
+        <div class="chapter">
+          <div class="ch-num">Ch 2.4</div>
+          <div class="ch-body">
+            <div class="ch-title">AI로 업종 벤치마크 리서치 & 가정 설정</div>
+            <div class="ch-desc">가정에 필요한 업종 데이터(평균 마진, 성장률, KPI)를 AI로 빠르게 찾는 법. 공개 자료·공시 데이터 활용 전략. 조사 결과를 가정에 반영하는 실습.</div>
+            <div class="ch-tags"><span class="tag ai">AI 활용</span><span class="tag practice">실습</span></div>
+          </div>
+          <div class="ch-time">60m</div>
+        </div>
+        <div class="chapter">
+          <div class="ch-num">Ch 2.5</div>
+          <div class="ch-body">
+            <div class="ch-title">Claude Code 입문 — 인터랙티브 HTML 모델 만들기</div>
+            <div class="ch-desc">Claude Code 환경 설정부터 시작. 사업계획서 업로드 → 드라이버 분해 → 슬라이더 시뮬레이션 HTML 생성 전 과정 시연. 엑셀로 내보내는 방법도 포함.</div>
+            <div class="ch-tags"><span class="tag ai">AI 활용</span><span class="tag practice">실습</span></div>
+          </div>
+          <div class="ch-time">30m</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PART 3 ── -->
+    <div class="part-block">
+      <div class="part-header">
+        <div class="part-badge p3">P.3</div>
+        <div class="part-title-wrap">
+          <h3>업종별 AI 실전 모델링</h3>
+          <div class="part-sub">4개 업종 × 2시간 — 실제 자료로 완성하는 인터랙티브 모델</div>
+        </div>
+        <div class="part-time">8H 00M</div>
+      </div>
+
+      <div class="industry-grid">
+        <div class="industry-card">
+          <div class="ind-label">Ch 3.1 · 2H</div>
+          <h4>이커머스 / 플랫폼</h4>
+          <p>GMV 기반 매출 드라이버 구조. 마케팅비-트래픽-전환율 연동 시뮬레이션. 실제 이커머스 IR 자료로 실습.</p>
+          <div class="ind-driver">핵심 드라이버: <span>트래픽 → 전환율 → GMV → Take rate</span></div>
+        </div>
+        <div class="industry-card">
+          <div class="ind-label">Ch 3.2 · 2H</div>
+          <h4>SaaS / 구독 서비스</h4>
+          <p>ARR Waterfall + 코호트 기반 Churn 분석. MRR × 12 구조와 확장 MRR 개념. SaaS 공시 기업 자료 활용.</p>
+          <div class="ind-driver">핵심 드라이버: <span>신규 MRR + 확장 MRR − Churn MRR</span></div>
+        </div>
+        <div class="industry-card">
+          <div class="ind-label">Ch 3.3 · 2H</div>
+          <h4>제조 / 스타트업</h4>
+          <p>원가 구조 분해(변동원가/고정비/인건비). 손익분기점(BEP) 시뮬레이션. 생산량 변동에 따른 마진 시나리오.</p>
+          <div class="ind-driver">핵심 드라이버: <span>생산량 × (단가 − 변동원가) − 고정비</span></div>
+        </div>
+        <div class="industry-card">
+          <div class="ind-label">Ch 3.4 · 2H</div>
+          <h4>유통 / 오프라인 서비스</h4>
+          <p>점포별 매출 집계 구조. 매장 수 확장 시나리오와 신규점 램프업 모델. 인건비·임차료 고정비 압박 분석.</p>
+          <div class="ind-driver">핵심 드라이버: <span>점포 수 × 점포당 매출 × 영업일</span></div>
+        </div>
+      </div>
+
+      <div class="highlight-box" style="margin-top:20px">
+        <div class="icon">🔧</div>
+        <p>
+          각 업종 챕터는 동일한 구조로 진행: <strong>① 공시자료 분석</strong> → <strong>② Claude와 드라이버 대화</strong> → <strong>③ 인터랙티브 모델 생성</strong> → <strong>④ 가정 합리성 검토</strong> → <strong>⑤ 시나리오 비교</strong>. 수강생은 챕터마다 완성된 모델 파일을 손에 쥔다.
+        </p>
+      </div>
+    </div>
+
+    <!-- ── PART 4 ── -->
+    <div class="part-block">
+      <div class="part-header">
+        <div class="part-badge p4">P.4</div>
+        <div class="part-title-wrap">
+          <h3>모델 → 의사결정 커뮤니케이션</h3>
+          <div class="part-sub">숫자에서 스토리로 — 경영진·투자자를 설득하는 법</div>
+        </div>
+        <div class="part-time">2H 00M</div>
+      </div>
+      <div class="chapter-list">
+        <div class="chapter">
+          <div class="ch-num">Ch 4.1</div>
+          <div class="ch-body">
+            <div class="ch-title">AI로 경영진 보고서 초안 만들기</div>
+            <div class="ch-desc">모델 결과를 임원·투자자 언어로 변환하는 법. "EBITDA가 15% 개선됩니다"가 아닌 "이 결정을 지금 해야 하는 이유"를 AI로 초안 생성하고 다듬는 실습.</div>
+            <div class="ch-tags"><span class="tag ai">AI 활용</span><span class="tag practice">실습</span></div>
+          </div>
+          <div class="ch-time">60m</div>
+        </div>
+        <div class="chapter">
+          <div class="ch-num">Ch 4.2</div>
+          <div class="ch-body">
+            <div class="ch-title">인터랙티브 모델로 발표하기 — 슬라이더가 설득한다</div>
+            <div class="ch-desc">완성된 HTML 모델을 화면 공유해서 실시간 시뮬레이션으로 발표하는 법. "전환율이 5%로 떨어지면?" 질문에 슬라이더 하나로 즉답하는 방법 시연.</div>
+            <div class="ch-tags"><span class="tag practice">실습</span><span class="tag ai">AI 활용</span></div>
+          </div>
+          <div class="ch-time">30m</div>
+        </div>
+        <div class="chapter">
+          <div class="ch-num">Ch 4.3</div>
+          <div class="ch-body">
+            <div class="ch-title">총정리 — 나만의 AI 파이낸셜 모델링 워크플로우 구성</div>
+            <div class="ch-desc">강의 전체 워크플로우 복습. 수강생 각자의 업무 상황에 맞는 도구 조합 설계. 실무 적용 로드맵 작성.</div>
+            <div class="ch-tags"><span class="tag theory">개념</span><span class="tag practice">실습</span></div>
+          </div>
+          <div class="ch-time">30m</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 타임라인 바 -->
+    <div class="timeline-bar">
+      <div class="tl-title">강의 시간 배분 시각화</div>
+      <div class="tl-bar-wrap">
+        <div class="tl-seg s0" title="P0: 1h"></div>
+        <div class="tl-seg s1" title="P1: 3.5h"></div>
+        <div class="tl-seg s2" title="P2: 4.5h"></div>
+        <div class="tl-seg s3" title="P3: 8h"></div>
+        <div class="tl-seg s4" title="P4: 2h"></div>
+      </div>
+      <div class="tl-legend">
+        <div class="tl-item"><div class="tl-dot" style="background:var(--accent-blue)"></div>P0 패러다임 전환 · 1H</div>
+        <div class="tl-item"><div class="tl-dot" style="background:var(--gold)"></div>P1 사고법 · 3H 30M</div>
+        <div class="tl-item"><div class="tl-dot" style="background:var(--accent-green)"></div>P2 AI 기초 실습 · 4H 30M</div>
+        <div class="tl-item"><div class="tl-dot" style="background:var(--accent-purple)"></div>P3 업종별 실전 · 8H</div>
+        <div class="tl-item"><div class="tl-dot" style="background:var(--accent-red)"></div>P4 커뮤니케이션 · 2H</div>
+      </div>
+      <div class="tl-total">총 강의 시간 <span>19H 00M</span></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════ 도구 스택 ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label">05 · 사용 도구</div>
+    <h2>강의에서 사용하는 AI 스택</h2>
+
+    <div class="cards-grid">
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <h3>Claude in Excel</h3>
+        <p>워크북 전체 구조 인식, 셀 참조 추적, 공식 생성. 3-Statement Model 초안을 30분 만에. Pro 플랜($20/월)으로 사용 가능. 강의의 메인 실습 도구.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚙️</div>
+        <h3>Claude Code</h3>
+        <p>사업계획서 업로드 → 인터랙티브 HTML 모델 생성. 슬라이더 시뮬레이션, 시나리오 탭, 브릿지 차트. 엑셀 없이 소통 가능한 모델을 만드는 핵심 도구.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔍</div>
+        <h3>Claude (Chat)</h3>
+        <p>가정 설정을 위한 업종 벤치마크 리서치, 보고서 초안 작성, 드라이버 로직 대화. "이 가정이 합리적인가"를 함께 검토하는 싱킹 파트너.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📋</div>
+        <h3>DART / SEC 공시자료</h3>
+        <p>가상 기업이 아닌 실제 기업 자료로 실습. 국내는 DART, 해외는 SEC EDGAR에서 사업보고서·IR 자료 활용. 실전 감각 그대로.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════ 수강생 기대 ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label">06 · 수강 후 달라지는 것</div>
+    <h2>Before / After</h2>
+
+    <div class="compare-wrap" style="margin-top:24px">
+      <div class="compare-col">
+        <div class="compare-header"><span class="dot"></span>수강 전</div>
+        <div class="compare-list">
+          <div class="compare-item">엑셀 수식 찾느라 2일 걸리는 모델 수정</div>
+          <div class="compare-item">가정 바뀌면 시트 전체를 손으로 다시 고침</div>
+          <div class="compare-item">"매출 30% 성장" 가정의 근거를 설명 못 함</div>
+          <div class="compare-item">임원 질문에 "잠시만요, 고쳐볼게요..." 15분 소요</div>
+          <div class="compare-item">AI를 어디에 어떻게 써야 할지 감이 없음</div>
+        </div>
+      </div>
+      <div class="compare-col new">
+        <div class="compare-header"><span class="dot"></span>수강 후</div>
+        <div class="compare-list">
+          <div class="compare-item">AI가 셀 참조 추적 → 모델 수정 30분 이내</div>
+          <div class="compare-item">슬라이더 하나로 전체 P&L 실시간 재계산</div>
+          <div class="compare-item">업종 벤치마크 + AI 리서치로 가정 논리 구성</div>
+          <div class="compare-item">임원 질문에 슬라이더 조작으로 즉석 답변</div>
+          <div class="compare-item">자신만의 AI 파이낸셜 모델링 워크플로우 완성</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<footer>
+  <div class="container">
+    AI-Native Financial Modeling Curriculum · 기획안 v1.0 · 2026
+  </div>
+</footer>
+
+</body>
+</html>
